@@ -160,7 +160,10 @@ int main()
 			conv(lc, leadCoeff);
 			long result = printFactors(lc, max);
 			if (result >= max)
+			{
+				currentA++;
 				continue;
+			}
 			
 			bool wasGreater = false;
 			for (int i = 0; i < factors.length(); i++)
@@ -179,7 +182,11 @@ int main()
 				
 			}
 			if (wasGreater)
+			{
+				currentA++;
 				continue;
+			}
+				
 			//If we made it to here, new match found!
 			//Adjust max, then print out the result.
 			max = result;
