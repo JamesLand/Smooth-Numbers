@@ -9,6 +9,10 @@ using namespace NTL;
 
 ZZ currentA;
 
+int primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,	47,	
+53,	59,	61,	67, 71,	73,	79,	83,	89,	97,	101, 103, 107, 109, 113, 127, 131,
+137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223};
+
 //Algorithm shamelessly stolen from
 //http://www.geeksforgeeks.org/print-all-prime-factors-of-a-given-number/
 //because i was too lazy to write this myself
@@ -25,23 +29,24 @@ long printFactors(ZZ n, int max)
 	   curMax = 2;
     }
 	//cout << "Past first while\n";
-	ZZ squareRt;
-	SqrRoot(squareRt, n);
+	//ZZ squareRt;
+	//SqrRoot(squareRt, n);
 	//cout << "Past sqrt" << "\n";
 	//cout << n << "\n";
 	//cout << squareRt << "\n";
     // n must be odd at this point.  So we can skip one element (Note i = i +2)
-    for (int i = 3; i <= max; i = i+2)
+    for (int i = 0; primes[i] <= max; i = i+1)
     {
+		int p = primes[i];
         // While i divides n, print i and divide n
-        while (n%i == 0)
+        while (n%p == 0)
         {
-            cout << i << " ";
-            n = n/i;
-			curMax = i;
+            cout << p << " ";
+            n = n/p;
+			curMax = p;
         }
 		//cout << "Past " << i << "\n";
-		SqrRoot(squareRt, n);
+		//SqrRoot(squareRt, n);
     }
  
     // This condition is to handle the case whien n is a prime number
@@ -108,8 +113,18 @@ bool checkFactors(const Vec< Pair< ZZ_pX, long > >& factors)
 	return true;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+	long startAt;
+	if (argc < 2)
+	{
+		startAt = 0;
+	}
+	else
+	{
+		startAt = atoi(argv[1]);
+	}
+	
 	
 	//p = 2;
 	string pStr("837583943092107483758343358937591");
@@ -134,7 +149,8 @@ int main()
 	ZZ_pXModulus precomp;
 	build(precomp, mod);
 	
-	currentA = getFirstA();
+	ZZ firstA = getFirstA();
+	currentA = firstA + startAt;
 	
 	// ZZ a;
 	// a = 2L;
@@ -149,6 +165,9 @@ int main()
 	ZZ_p leadCoeff;
 	while (true)
 	{
+		if (currentA % 10000 == 0)
+			cout << "Current A value: " << currentA - firstA << endl;
+		
 		int max = 200;
 		factors = checkA(base, currentA, precomp, leadCoeff);
 		
