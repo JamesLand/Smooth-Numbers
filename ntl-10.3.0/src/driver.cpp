@@ -9,11 +9,12 @@ using namespace NTL;
 
 ZZ currentA;
 
-int maxSmoothness = 200;
+int maxSmoothness = 1000;
 
 int primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,	47,	
 53,	59,	61,	67, 71,	73,	79,	83,	89,	97,	101, 103, 107, 109, 113, 127, 131,
-137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223};
+137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223,
+227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997, 1009};
 
 //Algorithm shamelessly stolen from
 //http://www.geeksforgeeks.org/print-all-prime-factors-of-a-given-number/
@@ -81,15 +82,16 @@ ZZ getFirstA()
 	return firstA;
 }
 
-Vec< Pair< ZZ_pX, long > > checkA(ZZ_pX& base, ZZ& a, ZZ_pXModulus& m, ZZ_p& leadCoeff, long& aSmoothness)
+
+Vec< Pair< ZZ_pX, long > > checkA(ZZ_pX& base, ZZ_pX& currentPoly, ZZ_pXModulus& m, ZZ_p& leadCoeff, long& aSmoothness)
 {
 	//Initialize result of PowerMod
 	ZZ_pX result;
 	ZZ_pX monicResult;
 	Vec< Pair< ZZ_pX, long > > factors;
 	
-	//Do modular exponentiation
-	PowerMod(result, base, a, m);
+	//Increase exponent by 1
+	result = currentPoly * base;
 	
 	leadCoeff = LeadCoeff(result);
 	ZZ lc;
@@ -128,14 +130,15 @@ bool checkFactors(const Vec< Pair< ZZ_pX, long > >& factors)
 
 int main(int argc, char* argv[])
 {
-	long startAt;
+	ZZ startAt;
 	if (argc < 2)
 	{
 		startAt = 0;
 	}
 	else
 	{
-		startAt = atoi(argv[1]);
+		ZZ A(NTL::INIT_VAL, argv[1]);
+		startAt = A;
 	}
 	
 	
@@ -164,6 +167,12 @@ int main(int argc, char* argv[])
 	
 	ZZ firstA = getFirstA();
 	currentA = firstA + startAt;
+	cout << currentA << endl;
+	
+	//Using first A, do PowerMod
+	ZZ_pX currentPoly;
+	
+	PowerMod(currentPoly, base, currentA, precomp);
 	
 	// ZZ a;
 	// a = 2L;
@@ -176,13 +185,14 @@ int main(int argc, char* argv[])
 	
 	Vec< Pair< ZZ_pX, long > > factors;
 	ZZ_p leadCoeff;
+	
 	while (true)
 	{
 		if (currentA % 10000 == 0)
 			cout << "Current A value: " << currentA - firstA << endl;
 		
 		long result;
-		factors = checkA(base, currentA, precomp, leadCoeff, result);
+		factors = checkA(base, currentPoly, precomp, leadCoeff, result);
 		
 		
 		if (checkFactors(factors))
