@@ -9,6 +9,8 @@ using namespace NTL;
 
 ZZ currentA;
 
+int maxSmoothness = 200;
+
 int primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,	47,	
 53,	59,	61,	67, 71,	73,	79,	83,	89,	97,	101, 103, 107, 109, 113, 127, 131,
 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223};
@@ -24,7 +26,7 @@ long printFactors(ZZ n, int max)
 	 // Print the number of 2s that divide our number
     while (n%2 == 0)
     {
-       cout << "2 ";
+       //cout << "2 ";
        n = n / 2;
 	   curMax = 2;
     }
@@ -41,7 +43,7 @@ long printFactors(ZZ n, int max)
         // While i divides n, print i and divide n
         while (n%p == 0)
         {
-            cout << p << " ";
+            //cout << p << " ";
             n = n/p;
 			curMax = p;
         }
@@ -53,11 +55,11 @@ long printFactors(ZZ n, int max)
     // greater than 2
     if (n > 2)
 	{
-		cout << n << " ";
+		//cout << n << " ";
 		curMax = to_long(n);
 	}
         
-	cout << "\n";
+	//cout << "\n";
 	
 	return curMax;
 }
@@ -79,22 +81,32 @@ ZZ getFirstA()
 	return firstA;
 }
 
-Vec< Pair< ZZ_pX, long > > checkA(ZZ_pX& base, ZZ& a, ZZ_pXModulus& m, ZZ_p& leadCoeff)
+Vec< Pair< ZZ_pX, long > > checkA(ZZ_pX& base, ZZ& a, ZZ_pXModulus& m, ZZ_p& leadCoeff, long& aSmoothness)
 {
 	//Initialize result of PowerMod
 	ZZ_pX result;
 	ZZ_pX monicResult;
+	Vec< Pair< ZZ_pX, long > > factors;
 	
 	//Do modular exponentiation
 	PowerMod(result, base, a, m);
 	
 	leadCoeff = LeadCoeff(result);
+	ZZ lc;
+	conv(lc, leadCoeff);
+	
+	//Factor leading coefficient before factoring polynomials
+	aSmoothness = printFactors(lc, maxSmoothness);
+	if (aSmoothness >= maxSmoothness)
+	{
+		return factors;
+	}
+	
 	div(monicResult, result, leadCoeff);
 	
 	//cout << result << "\n";
 	//cout << monicResult << "\n";
 	
-	Vec< Pair< ZZ_pX, long > > factors;
 	CanZass(factors, monicResult);  // calls "Cantor/Zassenhaus" algorithm
 
 	return factors;
@@ -168,29 +180,24 @@ int main(int argc, char* argv[])
 		if (currentA % 10000 == 0)
 			cout << "Current A value: " << currentA - firstA << endl;
 		
-		int max = 200;
-		factors = checkA(base, currentA, precomp, leadCoeff);
+		long result;
+		factors = checkA(base, currentA, precomp, leadCoeff, result);
 		
 		
 		if (checkFactors(factors))
 		{
 			
-			ZZ lc;
-			conv(lc, leadCoeff);
-			long result = printFactors(lc, max);
-			if (result >= max)
-			{
-				currentA++;
-				continue;
-			}
 			
+			//Check to see if the "b" values are below the current max	
+			ZZ lc;
+			conv(lc, leadCoeff);			
 			bool wasGreater = false;
 			for (int i = 0; i < factors.length(); i++)
 			{
 				ZZ_p coeff;
 				GetCoeff(coeff, factors[i].a, 0);
 				conv(lc, coeff);
-				if (lc >= max)
+				if (lc >= maxSmoothness)
 				{
 					wasGreater = true;
 					break;
@@ -205,10 +212,19 @@ int main(int argc, char* argv[])
 				currentA++;
 				continue;
 			}
-				
+			
+			//Factor the leading coefficient. (now done before factoring polynomial)
+			
+			// result = printFactors(lc, maxSmoothness);
+			// if (result >= maxSmoothness)
+			// {
+				// currentA++;
+				// continue;
+			// }
+			
 			//If we made it to here, new match found!
 			//Adjust max, then print out the result.
-			max = result;
+			maxSmoothness = result;
 			cout << "--------------MATCH FOUND----------------------\n";
 			cout << currentA << endl;
 			cout << leadCoeff << endl;
