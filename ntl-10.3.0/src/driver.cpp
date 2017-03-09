@@ -56,7 +56,7 @@ long printFactors(ZZ n, int max)
     if (n > 2)
 	{
 		//cout << n << " ";
-		curMax = to_long(n);
+		curMax = 999999;
 	}
         
 	//cout << "\n";
@@ -101,7 +101,8 @@ Vec< Pair< ZZ_pX, long > > checkA(ZZ_pX& base, ZZ& a, ZZ_pXModulus& m, ZZ_p& lea
 	{
 		return factors;
 	}
-	
+	cout << aSmoothness << endl;
+	cout << "Found a suitable leading coefficient: " << lc << endl;
 	div(monicResult, result, leadCoeff);
 	
 	//cout << result << "\n";
