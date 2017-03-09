@@ -185,7 +185,7 @@ Vec< Pair< ZZ_pX, long > > checkA(ZZ_pX& base, ZZ_pX& currentPoly, ZZ_pXModulus&
 	Vec< Pair< ZZ_pX, long > > factors;
 	
 	//Increase exponent by 1
-	result = currentPoly * base;
+	MulMod(result, currentPoly, base, m);
 	currentPoly = result;
 	
 	leadCoeff = LeadCoeff(result);
