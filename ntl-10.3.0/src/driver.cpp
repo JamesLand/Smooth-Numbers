@@ -139,13 +139,17 @@ ZZ printFactors(ZZ n, ZZ max)
 	ZZ currentPrime = to_ZZ(3);
 	while (NumBits(currentPrime) <= NumBits(max))
 	{
+		cout << currentPrime << " ";
 		// While i divides n, print i and divide n
-		while (n%currentPrime == 0)
+		ZZ res;
+		cout << n % currentPrime << endl;
+		while (n % currentPrime == to_ZZ(0))
 		{
-			//cout << p << " ";
-			n = n / currentPrime;
+			cout << currentPrime << " ";
+			div(n, n, currentPrime);
 			curMax = currentPrime;
 		}
+		NextPrime(currentPrime, currentPrime + 1);
 		//cout << "Past " << i << "\n";
 		//SqrRoot(squareRt, n);
 	}
