@@ -216,10 +216,10 @@ int main(int argc, char* argv[])
 				continue;
 			}
 			cout << result << endl;
-			cout << "Found a suitable factoring polynomial: " << lc << endl;
+			cout << "Found a suitable factoring polynomial: " << result << endl;
 			
 			//Factor the leading coefficient. (now done before factoring polynomial)
-			result = printFactors(lc);
+			result = printFactors(result);
 			if (NumBits(result) >= maxBitSmoothness)
 			{
 				currentA++;
