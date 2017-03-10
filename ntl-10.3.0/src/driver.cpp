@@ -11,7 +11,11 @@ using namespace NTL;
 
 ZZ currentA;
 
-int maxSmoothness = 7900;
+string threshStr("8375839430921074837583433589000");
+ZZ thresh(INIT_VAL, threshStr.c_str()); 
+
+int maxSmoothness = 7253;
+int maxBitSmoothness = 200;
 
 int primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,	47,	
 53,	59,	61,	67, 71,	73,	79,	83,	89,	97,	101, 103, 107, 109, 113, 127, 131,
@@ -114,9 +118,9 @@ int primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,	47,
 //http://www.geeksforgeeks.org/print-all-prime-factors-of-a-given-number/
 //because i was too lazy to write this myself
 //Modifications were made, though.
-long printFactors(ZZ n, int max)
+ZZ printFactors(ZZ n, int max)
 {
-	long curMax;
+	ZZ curMax;
 	//cout << n << "\n";
 	 // Print the number of 2s that divide our number
     while (n%2 == 0)
@@ -151,7 +155,7 @@ long printFactors(ZZ n, int max)
     if (n > 2)
 	{
 		//cout << n << " ";
-		curMax = 999999;
+		curMax = n;
 	}
         
 	//cout << "\n";
@@ -177,7 +181,7 @@ ZZ getFirstA()
 }
 
 
-Vec< Pair< ZZ_pX, long > > checkA(ZZ_pX& base, ZZ_pX& currentPoly, ZZ_pXModulus& m, ZZ_p& leadCoeff, long& aSmoothness)
+Vec< Pair< ZZ_pX, long > > checkA(ZZ_pX& base, ZZ_pX& currentPoly, ZZ_pXModulus& m, ZZ_p& leadCoeff)
 {
 	//Initialize result of PowerMod
 	ZZ_pX result;
@@ -192,14 +196,19 @@ Vec< Pair< ZZ_pX, long > > checkA(ZZ_pX& base, ZZ_pX& currentPoly, ZZ_pXModulus&
 	ZZ lc;
 	conv(lc, leadCoeff);
 	
+	// if (lc > thresh)
+	// {
+		// return factors;
+	// }
+	// cout << "Number passed thresh" << endl;
 	//Factor leading coefficient before factoring polynomials
-	aSmoothness = printFactors(lc, maxSmoothness);
-	if (aSmoothness >= maxSmoothness)
-	{
-		return factors;
-	}
-	cout << aSmoothness << endl;
-	cout << "Found a suitable leading coefficient: " << lc << endl;
+	// aSmoothness = printFactors(lc, maxSmoothness);
+	// if (aSmoothness >= maxSmoothness)
+	// {
+		// return factors;
+	// }
+	// cout << aSmoothness << endl;
+	// cout << "Found a suitable leading coefficient: " << lc << endl;
 	div(monicResult, result, leadCoeff);
 	
 	//cout << result << "\n";
@@ -280,19 +289,19 @@ int main(int argc, char* argv[])
 	
 	Vec< Pair< ZZ_pX, long > > factors;
 	ZZ_p leadCoeff;
-	
+	currentA++;
 	while (true)
 	{
 		if (currentA % 10000 == 0)
 			cout << "Current A value: " << currentA - firstA << endl;
 		
-		long result;
-		factors = checkA(base, currentPoly, precomp, leadCoeff, result);
+		ZZ result(-1);
+		factors = checkA(base, currentPoly, precomp, leadCoeff);
 		
 		
 		if (checkFactors(factors))
 		{
-			
+			cout << "Polynomial factors." << endl;
 			
 			//Check to see if the "b" values are below the current max	
 			ZZ lc;
@@ -303,13 +312,15 @@ int main(int argc, char* argv[])
 				ZZ_p coeff;
 				GetCoeff(coeff, factors[i].a, 0);
 				conv(lc, coeff);
-				if (lc >= maxSmoothness)
+				if (NumBits(lc) >= maxBitSmoothness)
 				{
 					wasGreater = true;
 					break;
 				}
+				else if (result < 0)
+					result = lc;
 				else if (lc > result)
-					result = to_long(lc);
+					result = lc;
 				//printFactors(lc);
 				
 			}
@@ -318,15 +329,16 @@ int main(int argc, char* argv[])
 				currentA++;
 				continue;
 			}
-			
+			cout << result << endl;
+			cout << "Found a suitable factoring polynomial: " << lc << endl;
 			//Factor the leading coefficient. (now done before factoring polynomial)
 			
-			// result = printFactors(lc, maxSmoothness);
-			// if (result >= maxSmoothness)
-			// {
-				// currentA++;
-				// continue;
-			// }
+			result = printFactors(lc, maxSmoothness);
+			if (NumBits(result) >= maxSmoothness)
+			{
+				currentA++;
+				continue;
+			}
 			
 			//If we made it to here, new match found!
 			//Adjust max, then print out the result.
